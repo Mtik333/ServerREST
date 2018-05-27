@@ -28,12 +28,7 @@ import com.mycompany.restserv.db.ScreeningDAO;
 import com.mycompany.restserv.db.SeatDAO;
 import com.mycompany.restserv.db.SeatReservedDAO;
 import com.mycompany.restserv.filter.AnnotateAuth;
-import com.mycompany.restserv.moviedto.RsiAuditorium;
-import com.mycompany.restserv.moviedto.RsiClient;
-import com.mycompany.restserv.moviedto.RsiMovie;
 import com.mycompany.restserv.moviedto.RsiReservation;
-import com.mycompany.restserv.moviedto.RsiScreening;
-import com.mycompany.restserv.moviedto.RsiSeat;
 import com.mycompany.restserv.moviedto.RsiSeatReserved;
 import java.awt.Image;
 import java.io.File;
@@ -42,7 +37,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -72,61 +66,75 @@ public class CinemaImpl{
     private ScreeningDAO screeningDao;
     private SeatDAO seatDao;
     private SeatReservedDAO seatRDao;
-    
+
     @GET
     @Path("auditoriums")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RsiAuditorium> getAuditoriums() {
+    public ResponseList getAuditoriums2(){
+        ResponseList response = new ResponseList();
         this.auditoriumDAO = new JpaAuditoriumDAO();
-        return auditoriumDAO.findAll();
+        response.setMessages(auditoriumDAO.findAll());
+        return response;
     }
-
+    
     @GET
     @Path("clients")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RsiClient> getClients() {
+    public ResponseList getClients() {
+        ResponseList response = new ResponseList();
         this.clientDao = new JpaClientDAO();
-        return clientDao.findAll();
+        response.setClients(clientDao.findAll());
+        return response;
     }
 
     @GET
     @Path("movies")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RsiMovie> getMovies() {
+    public ResponseList getMovies() {
+        ResponseList response = new ResponseList();
         this.movieDAO = new JpaMovieDAO();
-        return movieDAO.findAllMovies();
+        response.setMovies(movieDAO.findAllMovies());
+        return response;
     }
 
     @GET
     @Path("reservations")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RsiReservation> getReservations() {
+    public ResponseList getReservations() {
+        ResponseList response = new ResponseList();
         this.reservationDao = new JpaReservationDAO();
-        return reservationDao.findAll();
+        response.setReservations(reservationDao.findAll());
+        return response;
     }
 
     @GET
     @Path("screenings")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RsiScreening> getScreenings() {
+    public ResponseList getScreenings() {
+        ResponseList response = new ResponseList();
         this.screeningDao = new JpaScreeningDAO();
-        return screeningDao.findAll();
+        response.setScreenings(screeningDao.findAll());
+        return response;
     }
 
     @GET
     @Path("seats")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RsiSeat> getSeats() {
+    public ResponseList getSeats() {
+        ResponseList response = new ResponseList();
         this.seatDao = new JpaSeatDAO();
-        return seatDao.findAll();
+        response.setSeats(seatDao.findAll());
+        return response;
     }
 
     @GET
     @Path("reservedseats")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RsiSeatReserved> getReservedSeats() {
+    public ResponseList getReservedSeats() {
+        ResponseList response = new ResponseList();
         this.seatRDao = new JpaSeatReservedDAO();
-        return seatRDao.findAll();
+        response.setSeatsreserved(seatRDao.findAll());
+        return response;
     }
     
     @GET
