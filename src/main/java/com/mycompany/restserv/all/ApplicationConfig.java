@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.serverrest;
+package com.mycompany.restserv.all;
 
 import java.util.Set;
 import javax.ws.rs.core.Application;
@@ -29,8 +29,12 @@ public class ApplicationConfig extends Application {
      * If required, comment out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(com.mycompany.serverrest.CinemaImpl.class);
-        resources.add(com.mycompany.serverrest.GenericResource.class);
+        resources.add(com.mycompany.restserv.all.ChujResource.class);
+        resources.add(com.mycompany.restserv.all.CinemaImpl.class);
+        resources.add(com.mycompany.restserv.all.GenericResource.class);
+        resources.add(com.mycompany.restserv.filter.LogingFilter.class);
+        resources.add(com.mycompany.restserv.filter.MyResponseFilter.class);
+        
     }
     
 }

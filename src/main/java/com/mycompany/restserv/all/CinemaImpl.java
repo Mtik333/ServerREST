@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.serverrest;
+package com.mycompany.restserv.all;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
@@ -27,6 +27,7 @@ import com.mycompany.restserv.db.ReservationDAO;
 import com.mycompany.restserv.db.ScreeningDAO;
 import com.mycompany.restserv.db.SeatDAO;
 import com.mycompany.restserv.db.SeatReservedDAO;
+import com.mycompany.restserv.filter.AnnotateAuth;
 import com.mycompany.restserv.moviedto.RsiAuditorium;
 import com.mycompany.restserv.moviedto.RsiClient;
 import com.mycompany.restserv.moviedto.RsiMovie;
@@ -45,18 +46,24 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 /**
  *
  * @author Mateusz
  */
 @Path("cinema")
-public class CinemaImpl implements Cinema{
+public class CinemaImpl{
 
     private MovieDAO movieDAO;
     private AuditoriumDAO auditoriumDAO;
@@ -68,54 +75,69 @@ public class CinemaImpl implements Cinema{
     
     @GET
     @Path("auditoriums")
-    @Override
+    @Produces(MediaType.APPLICATION_JSON)
     public List<RsiAuditorium> getAuditoriums() {
         this.auditoriumDAO = new JpaAuditoriumDAO();
         return auditoriumDAO.findAll();
     }
 
-    @Override
+    @GET
+    @Path("clients")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<RsiClient> getClients() {
         this.clientDao = new JpaClientDAO();
         return clientDao.findAll();
     }
 
-    @Override
+    @GET
+    @Path("movies")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<RsiMovie> getMovies() {
         this.movieDAO = new JpaMovieDAO();
         return movieDAO.findAllMovies();
     }
 
-    @Override
+    @GET
+    @Path("reservations")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<RsiReservation> getReservations() {
         this.reservationDao = new JpaReservationDAO();
         return reservationDao.findAll();
     }
 
-    @Override
+    @GET
+    @Path("screenings")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<RsiScreening> getScreenings() {
         this.screeningDao = new JpaScreeningDAO();
         return screeningDao.findAll();
     }
 
-    @Override
+    @GET
+    @Path("seats")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<RsiSeat> getSeats() {
         this.seatDao = new JpaSeatDAO();
         return seatDao.findAll();
     }
 
-    @Override
+    @GET
+    @Path("reservedseats")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<RsiSeatReserved> getReservedSeats() {
         this.seatRDao = new JpaSeatReservedDAO();
         return seatRDao.findAll();
     }
-
-    @Override
-    public Boolean authenticateClient() throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+    @GET
+    @Path("authenticate")
+    @AnnotateAuth
+    public Response authenticateClient() throws Exception {
+        return Response.accepted().build();
     }
 
-    @Override
+    @GET
+    @Path("image")
     public Image downloadImage(String name) {
         try {
             File f = new File(CinemaImpl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
@@ -131,19 +153,21 @@ public class CinemaImpl implements Cinema{
         }
     }
 
-    @Override
-    public void createReservation(RsiReservation reservationId, RsiSeat rsiSeat) {
+    @POST
+    @Path("reservations")
+    public void createReservation(Marshal marshal) {
         this.reservationDao = new JpaReservationDAO();
-        reservationId = reservationDao.save(reservationId);
+        marshal.setRsiReservation(reservationDao.save(marshal.getRsiReservation()));
         this.seatRDao = new JpaSeatReservedDAO();
         RsiSeatReserved rsiSeatReserved = new RsiSeatReserved();
-        rsiSeatReserved.setReservationId(reservationId);
-        rsiSeatReserved.setScreeningId(reservationId.getScreeningId());
-        rsiSeatReserved.setSeatId(rsiSeat);
+        rsiSeatReserved.setReservationId(marshal.getRsiReservation());
+        rsiSeatReserved.setScreeningId(marshal.getRsiReservation().getScreeningId());
+        rsiSeatReserved.setSeatId(marshal.getRsiSeat());
         seatRDao.save(rsiSeatReserved);
     }
 
-    @Override
+    @POST
+    @Path("pdf")
     public byte[] pdfReservation(RsiReservation reservation) {
         try {
             File file = new File("itext-test.pdf");
@@ -193,24 +217,31 @@ public class CinemaImpl implements Cinema{
         return null;
     }
 
-    @Override
-    public void removeReservation(RsiReservation reservationId) {
+    @DELETE
+    @Path("reservations/{id}")
+    public void removeReservation(@PathParam("id") Integer reservationId) {
         this.reservationDao = new JpaReservationDAO();
         this.seatRDao = new JpaSeatReservedDAO();
-        RsiSeatReserved seatReserved = seatRDao.findByReservationId(reservationId);
+        RsiSeatReserved seatReserved = seatRDao.findByReservationId(reservationDao.findById(reservationId));
         seatRDao.delete(seatReserved);
-        reservationDao.delete(reservationId);
+        reservationDao.delete(reservationDao.findById(reservationId));
     }
 
-    @Override
-    public void changeReservation(RsiReservation reservation, RsiSeat rsiSeat) {
+    
+    @PUT
+    @Path("reservations/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public void changeReservation(Marshal marshal) {
         this.reservationDao = new JpaReservationDAO();
         this.seatRDao = new JpaSeatReservedDAO();
-        RsiSeatReserved seatReserved = seatRDao.findByReservationId(reservation);
-        seatReserved.setSeatId(rsiSeat);
+        RsiSeatReserved seatReserved = seatRDao.findByReservationId(marshal.getRsiReservation());
+        seatReserved.setSeatId(marshal.getRsiSeat());
         seatRDao.update(seatReserved);
     }
+    
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/headers")
     public Response getHeaders(@Context HttpHeaders headers) {
         StringBuilder sb = new StringBuilder();
