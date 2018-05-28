@@ -20,7 +20,7 @@ public class MyResponseFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-        responseContext.getHeaders().add("mojNaglowek", "rsi test");
+        responseContext.getHeaders().add("CinemaREST", "Confirmed");
     }
 
 }

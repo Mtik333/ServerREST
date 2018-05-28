@@ -187,10 +187,12 @@ public class CinemaImpl{
     }
 
     @POST
-    @Path("pdf")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("pdf/{id}")
+//    @Consumes(MediaType.APPLICATION_JSON)
     @Produces("application/pdf")
-    public Response pdfReservation(RsiReservation reservation) {
+    public Response pdfReservation(@PathParam("id") Integer id) {
+        this.reservationDao = new JpaReservationDAO();
+        RsiReservation reservation = reservationDao.findById(id);
         try {
             File file = new File("itext-test.pdf");
             FileOutputStream fileout = new FileOutputStream(file);
@@ -257,6 +259,9 @@ public class CinemaImpl{
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response changeReservation(Marshal marshal) {
+        System.out.println(marshal.getRsiReservation());
+        System.out.println(marshal.getRsiSeat());
+        System.out.println("xd");
         this.reservationDao = new JpaReservationDAO();
         this.seatRDao = new JpaSeatReservedDAO();
         RsiSeatReserved seatReserved = seatRDao.findByReservationId(marshal.getRsiReservation());
