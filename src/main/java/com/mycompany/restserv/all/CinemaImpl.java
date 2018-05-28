@@ -31,6 +31,8 @@ import com.mycompany.restserv.filter.AnnotateAuth;
 import com.mycompany.restserv.moviedto.RsiReservation;
 import com.mycompany.restserv.moviedto.RsiSeatReserved;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -114,6 +116,8 @@ public class CinemaImpl{
         ResponseList response = new ResponseList();
         this.screeningDao = new JpaScreeningDAO();
         response.setScreenings(screeningDao.findAll());
+        System.out.println(response.screenings.get(0).getScreeningStart());
+        System.out.println(response.screenings.get(0).getScreeningStart().getTime());
         return response;
     }
 
@@ -145,15 +149,20 @@ public class CinemaImpl{
     }
 
     @GET
-    @Path("image")
-    public Image downloadImage(String name) {
+    @Path("image/{name}")
+    @Produces("image/png")
+    public Response downloadImage(@PathParam("name") String name) {
         try {
             File f = new File(CinemaImpl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
             System.out.println(f.getAbsolutePath() + ";\n" + f.getCanonicalPath() + "+\n" + f.getPath());
             File test = new File("D:" + File.separator + "posters" + File.separator + name);
             System.out.println(test.getPath());
             System.out.println(test.getAbsolutePath());
-            return ImageIO.read(test.getAbsoluteFile());
+            BufferedImage img = ImageIO.read(test.getAbsoluteFile());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(img, "png", baos);
+            byte[] imageData = baos.toByteArray();
+            return Response.ok(imageData).build();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -162,8 +171,10 @@ public class CinemaImpl{
     }
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("reservations")
-    public void createReservation(Marshal marshal) {
+    public Response createReservation(Marshal marshal) {
         this.reservationDao = new JpaReservationDAO();
         marshal.setRsiReservation(reservationDao.save(marshal.getRsiReservation()));
         this.seatRDao = new JpaSeatReservedDAO();
@@ -172,11 +183,14 @@ public class CinemaImpl{
         rsiSeatReserved.setScreeningId(marshal.getRsiReservation().getScreeningId());
         rsiSeatReserved.setSeatId(marshal.getRsiSeat());
         seatRDao.save(rsiSeatReserved);
+        return Response.status(Response.Status.CREATED).entity(marshal).build();
     }
 
     @POST
     @Path("pdf")
-    public byte[] pdfReservation(RsiReservation reservation) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces("application/pdf")
+    public Response pdfReservation(RsiReservation reservation) {
         try {
             File file = new File("itext-test.pdf");
             FileOutputStream fileout = new FileOutputStream(file);
@@ -214,7 +228,8 @@ public class CinemaImpl{
             }
             document.close();
             byte[] data = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
-            return data;
+            return Response.ok(data).build();
+            //return data;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (DocumentException e) {
@@ -227,12 +242,13 @@ public class CinemaImpl{
 
     @DELETE
     @Path("reservations/{id}")
-    public void removeReservation(@PathParam("id") Integer reservationId) {
+    public Response removeReservation(@PathParam("id") Integer reservationId) {
         this.reservationDao = new JpaReservationDAO();
         this.seatRDao = new JpaSeatReservedDAO();
         RsiSeatReserved seatReserved = seatRDao.findByReservationId(reservationDao.findById(reservationId));
         seatRDao.delete(seatReserved);
         reservationDao.delete(reservationDao.findById(reservationId));
+        return Response.status(Response.Status.OK).build();
     }
 
     
@@ -240,12 +256,13 @@ public class CinemaImpl{
     @Path("reservations/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public void changeReservation(Marshal marshal) {
+    public Response changeReservation(Marshal marshal) {
         this.reservationDao = new JpaReservationDAO();
         this.seatRDao = new JpaSeatReservedDAO();
         RsiSeatReserved seatReserved = seatRDao.findByReservationId(marshal.getRsiReservation());
         seatReserved.setSeatId(marshal.getRsiSeat());
         seatRDao.update(seatReserved);
+        return Response.status(Response.Status.CREATED).entity(marshal).build();
     }
     
     @GET

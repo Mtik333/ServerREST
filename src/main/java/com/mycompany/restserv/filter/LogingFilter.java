@@ -6,7 +6,13 @@
 package com.mycompany.restserv.filter;
 
 
+//import com.sun.xml.internal.messaging.saaj.util.Base64;
+import com.mycompany.restserv.db.ClientDAO;
+import com.mycompany.restserv.db.JpaClientDAO;
+import com.mycompany.restserv.moviedto.RsiClient;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
@@ -35,17 +41,15 @@ public class LogingFilter implements ContainerResponseFilter, ContainerRequestFi
         if (authorization!=null){
             String base64Credentials = authorization.substring("Basic".length()).trim();
             String credentials;
-//            try {
-//                credentials = new String(Base64.decode(base64Credentials),
-//                        Charset.forName("UTF-8"));
-//                final String[] values = credentials.split(":",2);
-//                if (values[0].contentEquals("test") && values[1].contentEquals("test")){
-//                    System.out.println("ok");
-//                    return;
-//                }
-//            } catch (Base64DecodingException ex) {
-//                Logger.getLogger(LogingFilter.class.getName()).log(Level.SEVERE, null, ex);
-//            }
+            credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+//            credentials = Base64.base64Decode(base64Credentials);
+            final String[] values = credentials.split(":",2);
+            ClientDAO clientDao = new JpaClientDAO();
+            RsiClient client = clientDao.findByUsernamePassword(values[0], values[1]);
+            if (client!=null){
+                System.out.println("ok");
+                return;
+            }
         }
         Response response = Response.status(Response.Status.UNAUTHORIZED).build();
         crc.abortWith(response);
