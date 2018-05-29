@@ -151,27 +151,27 @@ public class CinemaImpl{
         return Response.accepted().build();
     }
 
-    @GET
-    @Path("image/{name}")
-    @Produces("image/png")
-    public Response downloadImage(@PathParam("name") String name) {
-        try {
-            File f = new File(CinemaImpl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-            System.out.println(f.getAbsolutePath() + ";\n" + f.getCanonicalPath() + "+\n" + f.getPath());
-            File test = new File("D:" + File.separator + "posters" + File.separator + name);
-            System.out.println(test.getPath());
-            System.out.println(test.getAbsolutePath());
-            BufferedImage img = ImageIO.read(test.getAbsoluteFile());
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(img, "png", baos);
-            byte[] imageData = baos.toByteArray();
-            return Response.ok(imageData).build();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-
-        }
-    }
+//    @GET
+//    @Path("image/{name}")
+//    @Produces("image/png")
+//    public Response downloadImage(@PathParam("name") String name) {
+//        try {
+//            File f = new File(CinemaImpl.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+//            System.out.println(f.getAbsolutePath() + ";\n" + f.getCanonicalPath() + "+\n" + f.getPath());
+//            File test = new File("D:" + File.separator + "posters" + File.separator + name);
+//            System.out.println(test.getPath());
+//            System.out.println(test.getAbsolutePath());
+//            BufferedImage img = ImageIO.read(test.getAbsoluteFile());
+//            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//            ImageIO.write(img, "png", baos);
+//            byte[] imageData = baos.toByteArray();
+//            return Response.ok(imageData).build();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return null;
+//
+//        }
+//    }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -191,7 +191,6 @@ public class CinemaImpl{
 
     @POST
     @Path("pdf/{id}")
-//    @Consumes(MediaType.APPLICATION_JSON)
     @Produces("application/pdf")
     public Response pdfReservation(@PathParam("id") Integer id) {
         this.reservationDao = new JpaReservationDAO();

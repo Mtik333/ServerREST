@@ -29,9 +29,7 @@ public class ApplicationConfig extends Application {
      * If required, comment out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(com.mycompany.restserv.all.ChujResource.class);
         resources.add(com.mycompany.restserv.all.CinemaImpl.class);
-        resources.add(com.mycompany.restserv.all.GenericResource.class);
         resources.add(com.mycompany.restserv.all.ImageContentResource.class);
         resources.add(com.mycompany.restserv.filter.LogingFilter.class);
         resources.add(com.mycompany.restserv.filter.MyResponseFilter.class);
