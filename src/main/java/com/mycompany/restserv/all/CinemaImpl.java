@@ -176,6 +176,7 @@ public class CinemaImpl{
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @AnnotateAuth
     @Path("reservations")
     public Response createReservation(Marshal marshal) {
         this.reservationDao = new JpaReservationDAO();
@@ -189,8 +190,9 @@ public class CinemaImpl{
         return Response.status(Response.Status.CREATED).entity(marshal).build();
     }
 
-    @POST
+    @GET
     @Path("pdf/{id}")
+    @AnnotateAuth
     @Produces("application/pdf")
     public Response pdfReservation(@PathParam("id") Integer id) {
         this.reservationDao = new JpaReservationDAO();
@@ -245,6 +247,7 @@ public class CinemaImpl{
     }
 
     @DELETE
+    @AnnotateAuth
     @Path("reservations/{id}")
     public Response removeReservation(@PathParam("id") Integer reservationId) {
         this.reservationDao = new JpaReservationDAO();
@@ -255,7 +258,7 @@ public class CinemaImpl{
         return Response.status(Response.Status.OK).build();
     }
 
-    
+    @AnnotateAuth
     @PUT
     @Path("reservations/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
