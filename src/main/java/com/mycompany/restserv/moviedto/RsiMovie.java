@@ -6,7 +6,11 @@
 package com.mycompany.restserv.moviedto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,6 +22,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -67,7 +72,9 @@ public class RsiMovie implements Serializable {
     private Integer duration;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "movieId")
     private Collection<RsiScreening> rsiScreeningCollection;
-
+    @Transient
+    private Map<String,String> links = new HashMap<String,String>();
+    
     public RsiMovie() {
     }
 
@@ -162,5 +169,16 @@ public class RsiMovie implements Serializable {
     public String toString() {
         return "com.mycompany.soapserv.moviedto.RsiMovie[ id=" + id + " ]";
     }
+
+    public Map<String, String> getLinks() {
+        return links;
+    }
+
+    public void setLinks(Map<String, String> links) {
+        this.links = links;
+    }
+
+ 
+    
     
 }

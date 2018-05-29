@@ -28,6 +28,7 @@ import com.mycompany.restserv.db.ScreeningDAO;
 import com.mycompany.restserv.db.SeatDAO;
 import com.mycompany.restserv.db.SeatReservedDAO;
 import com.mycompany.restserv.filter.AnnotateAuth;
+import com.mycompany.restserv.moviedto.RsiMovie;
 import com.mycompany.restserv.moviedto.RsiReservation;
 import com.mycompany.restserv.moviedto.RsiSeatReserved;
 import java.awt.Image;
@@ -54,6 +55,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Link;
 /**
  *
  * @author Mateusz
@@ -279,5 +282,38 @@ public class CinemaImpl{
             sb.append(header).append(":").append(headers.getHeaderString(header)).append("<br>");
         }
         return Response.status(200).entity(sb.toString()).build();
+    }
+    
+    @Context UriInfo uriInfo;
+    @Path("/movie/{movieId}")
+    public ImageContentResource getItemContentResource(@PathParam("movieId") Long id){
+        System.out.println("xD");
+        return new ImageContentResource(id);
+    }
+    
+    @GET
+    @Path("/hateoas/{movieId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RsiMovie getMessageHATEOAS(@PathParam("movieId") Long id, @Context UriInfo uriInfo){
+        this.movieDAO = new JpaMovieDAO();
+        RsiMovie rsiMovie = movieDAO.findById(id.intValue());
+        String uri = uriInfo.getBaseUriBuilder()
+                .path(CinemaImpl.class)
+                .path(CinemaImpl.class,"getItemContentResource")
+                .path(ImageContentResource.class)
+                .resolveTemplate("movieId",rsiMovie.getId())
+                .build()
+                .toString();
+        rsiMovie.getLinks().put("self", uri);
+        String uri2 = uriInfo.getBaseUriBuilder()
+                .path(CinemaImpl.class)
+                .path(CinemaImpl.class,"getItemContentResource")
+                .path(ImageContentResource.class)
+                .resolveTemplate("movieId",rsiMovie.getId())
+                .path("image")
+                .build()
+                .toString();
+        rsiMovie.getLinks().put("image", uri2);
+        return rsiMovie;
     }
 }
